@@ -13,8 +13,8 @@
 package mqtt
 
 import (
+	"context"
 	"sync"
-	"time"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"
 )
@@ -32,7 +32,7 @@ type PacketAndToken struct {
 //actions have completed.
 type Token interface {
 	Wait() bool
-	WaitTimeout(time.Duration) bool
+	WaitContext(context.Context) bool
 	flowComplete()
 	Error() error
 }
@@ -56,18 +56,18 @@ func (b *baseToken) Wait() bool {
 	return b.ready
 }
 
-// WaitTimeout takes a time in ms to wait for the flow associated with the
-// Token to complete, returns true if it returned before the timeout or
-// returns false if the timeout occurred. In the case of a timeout the Token
-// does not have an error set in case the caller wishes to wait again
-func (b *baseToken) WaitTimeout(d time.Duration) bool {
+// WaitContext waits for the flow associated with the Token to complete or the
+// context to be cancelled, returns true if it returned before cancellation or
+// returns false if the context is cancelled. In the case of cancellation the
+// Token does not have an error set in case the caller wishes to wait again
+func (b *baseToken) WaitContext(ctx context.Context) bool {
 	b.m.Lock()
 	defer b.m.Unlock()
 	if !b.ready {
 		select {
 		case <-b.complete:
 			b.ready = true
-		case <-time.After(d):
+		case <-ctx.Done():
 		}
 	}
 	return b.ready

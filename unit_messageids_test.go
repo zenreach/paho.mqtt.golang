@@ -15,9 +15,9 @@
 package mqtt
 
 import (
+	"context"
 	"fmt"
 	"testing"
-	"time"
 )
 
 type DummyToken struct{}
@@ -26,7 +26,7 @@ func (d *DummyToken) Wait() bool {
 	return true
 }
 
-func (d *DummyToken) WaitTimeout(t time.Duration) bool {
+func (d *DummyToken) WaitContext(_ context.Context) bool {
 	return true
 }
 

@@ -16,6 +16,7 @@ package mqtt
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
@@ -23,6 +24,11 @@ import (
 	"testing"
 	"time"
 )
+
+func timeout(timeout time.Duration) context.Context {
+	ctx, _ := context.WithTimeout(context.Background(), timeout)
+	return ctx
+}
 
 func Test_Start(t *testing.T) {
 	ops := NewClientOptions().SetClientID("Start").AddBroker(FVTTCP)
@@ -32,7 +38,7 @@ func Test_Start(t *testing.T) {
 		t.Fatalf("Error on Client.Connect(): %v", token.Error())
 	}
 
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 }
 
 /* uncomment this if you have connection policy disallowing FailClientID
@@ -46,7 +52,7 @@ func Test_InvalidConnRc(t *testing.T) {
 	if err != ErrNotAuthorized {
 		t.Fatalf("Did not receive error as expected, got %v", err)
 	}
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 }
 */
 
@@ -87,7 +93,7 @@ func Test_Start_Ssl(t *testing.T) {
 		t.Fatalf("Error on Client.Connect(): %v", err)
 	}
 
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 }
 */
 
@@ -104,7 +110,7 @@ func Test_Publish_1(t *testing.T) {
 
 	c.Publish("test/Publish", 0, false, "Publish qo0")
 
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 }
 
 func Test_Publish_2(t *testing.T) {
@@ -121,7 +127,7 @@ func Test_Publish_2(t *testing.T) {
 	c.Publish("/test/Publish", 0, false, "Publish1 qos0")
 	c.Publish("/test/Publish", 0, false, "Publish2 qos0")
 
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 }
 
 func Test_Publish_3(t *testing.T) {
@@ -139,7 +145,7 @@ func Test_Publish_3(t *testing.T) {
 	c.Publish("/test/Publish", 1, false, "Publish2 qos1")
 	c.Publish("/test/Publish", 2, false, "Publish2 qos2")
 
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 }
 
 func Test_Subscribe(t *testing.T) {
@@ -172,8 +178,8 @@ func Test_Subscribe(t *testing.T) {
 
 	p.Publish("/test/sub", 0, false, "Publish qos0")
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 func Test_Will(t *testing.T) {
@@ -217,7 +223,7 @@ func Test_Will(t *testing.T) {
 		t.Fatalf("will message did not have correct payload")
 	}
 
-	wsub.Disconnect(250)
+	wsub.Disconnect(timeout(250))
 }
 
 func Test_CleanSession(t *testing.T) {
@@ -251,7 +257,7 @@ func Test_CleanSession(t *testing.T) {
 		t.Fatalf("Error on Client.Subscribe(): %v", wsubToken.Error())
 	}
 
-	wsub.Disconnect(250)
+	wsub.Disconnect(timeout(250))
 	time.Sleep(2 * time.Second)
 
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
@@ -262,7 +268,7 @@ func Test_CleanSession(t *testing.T) {
 		t.Fatalf("Error on Client.Publish(): %v", pToken.Error())
 	}
 
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 
 	wsub = NewClient(wops)
 	if wToken := wsub.Connect(); wToken.Wait() && wToken.Error() != nil {
@@ -278,7 +284,7 @@ func Test_CleanSession(t *testing.T) {
 		t.Fatalf("failed to receive publish")
 	}
 
-	wsub.Disconnect(250)
+	wsub.Disconnect(timeout(250))
 
 	wops.SetCleanSession(true)
 
@@ -287,7 +293,7 @@ func Test_CleanSession(t *testing.T) {
 		t.Fatalf("Error on Client.Connect(): %v", wToken.Error())
 	}
 
-	wsub.Disconnect(250)
+	wsub.Disconnect(timeout(250))
 }
 
 func Test_Binary_Will(t *testing.T) {
@@ -335,7 +341,7 @@ func Test_Binary_Will(t *testing.T) {
 		t.Fatalf("will message did not have correct payload")
 	}
 
-	wsub.Disconnect(250)
+	wsub.Disconnect(timeout(250))
 }
 
 /**
@@ -397,8 +403,8 @@ func Test_p0s0(t *testing.T) {
 	p.Publish(topic, 0, false, "p0s0 payload 3")
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 // Pub 0, Sub 1
@@ -443,8 +449,8 @@ func Test_p0s1(t *testing.T) {
 	p.Publish(topic, 0, false, "p0s1 payload 3")
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 // Pub 0, Sub 2
@@ -490,8 +496,8 @@ func Test_p0s2(t *testing.T) {
 
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 // Pub 1, Sub 0
@@ -537,8 +543,8 @@ func Test_p1s0(t *testing.T) {
 
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 // Pub 1, Sub 1
@@ -583,8 +589,8 @@ func Test_p1s1(t *testing.T) {
 	p.Publish(topic, 1, false, "p1s1 payload 3")
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 // Pub 1, Sub 2
@@ -630,8 +636,8 @@ func Test_p1s2(t *testing.T) {
 
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 // Pub 2, Sub 0
@@ -675,8 +681,8 @@ func Test_p2s0(t *testing.T) {
 	p.Publish(topic, 2, false, "p2s0 payload 3")
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 // Pub 2, Sub 1
@@ -722,8 +728,8 @@ func Test_p2s1(t *testing.T) {
 
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 // Pub 2, Sub 2
@@ -769,8 +775,8 @@ func Test_p2s2(t *testing.T) {
 
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 func Test_PublishMessage(t *testing.T) {
@@ -818,8 +824,8 @@ func Test_PublishMessage(t *testing.T) {
 	p.Publish(topic, 0, false, text)
 	wait(choke)
 
-	p.Disconnect(250)
-	s.Disconnect(250)
+	p.Disconnect(timeout(250))
+	s.Disconnect(timeout(250))
 }
 
 func Test_PublishEmptyMessage(t *testing.T) {
@@ -865,7 +871,7 @@ func Test_PublishEmptyMessage(t *testing.T) {
 	p.Publish(topic, 0, false, "")
 	wait(choke)
 
-	p.Disconnect(250)
+	p.Disconnect(timeout(250))
 }
 
 // func Test_Cleanstore(t *testing.T) {
@@ -916,7 +922,7 @@ func Test_PublishEmptyMessage(t *testing.T) {
 // 	p.Publish(topic, 0, false, text)
 // 	p.Publish(topic, 0, false, text)
 
-// 	p.Disconnect(250)
+// 	p.Disconnect(timeout(250))
 
 // 	s2ops := NewClientOptions()
 // 	s2ops.AddBroker(FVTTCP)
@@ -951,7 +957,7 @@ func Test_MultipleURLs(t *testing.T) {
 		t.Fatalf("Error on Client.Publish(): %v", pToken.Error())
 	}
 
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 }
 
 // A test to make sure ping mechanism is working
@@ -970,7 +976,7 @@ func Test_ping1_idle5(t *testing.T) {
 		t.Fatalf("Error on Client.Connect(): %v", token.Error())
 	}
 	time.Sleep(5 * time.Second)
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 }
 
 func Test_autoreconnect(t *testing.T) {
@@ -999,5 +1005,5 @@ func Test_autoreconnect(t *testing.T) {
 		t.Fail()
 	}
 
-	c.Disconnect(250)
+	c.Disconnect(timeout(250))
 }

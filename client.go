@@ -16,6 +16,7 @@
 package mqtt
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -56,7 +57,7 @@ const (
 type Client interface {
 	IsConnected() bool
 	Connect() Token
-	Disconnect(quiesce uint)
+	Disconnect(ctx context.Context)
 	Publish(topic string, qos byte, retained bool, payload interface{}) Token
 	Subscribe(topic string, qos byte, callback MessageHandler) Token
 	SubscribeMultiple(filters map[string]byte, callback MessageHandler) Token
@@ -388,7 +389,7 @@ func (c *client) connect() byte {
 // Disconnect will end the connection with the server, but not before waiting
 // the specified number of milliseconds to wait for existing work to be
 // completed.
-func (c *client) Disconnect(quiesce uint) {
+func (c *client) Disconnect(ctx context.Context) {
 	if c.status == connected {
 		DEBUG.Println(CLI, "disconnecting")
 		c.setConnected(disconnected)
@@ -398,7 +399,7 @@ func (c *client) Disconnect(quiesce uint) {
 		c.oboundP <- &PacketAndToken{p: dm, t: dt}
 
 		// wait for work to finish, or quiesce time consumed
-		dt.WaitTimeout(time.Duration(quiesce) * time.Millisecond)
+		dt.WaitContext(ctx)
 	} else {
 		WARN.Println(CLI, "Disconnect() called but not connected (disconnected/reconnecting)")
 		c.setConnected(disconnected)
