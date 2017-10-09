@@ -27,10 +27,12 @@ must wait for messages to be published.
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"time"
 
-	MQTT "github.com/eclipse/paho.mqtt.golang"
+	MQTT "github.com/zenreach/paho.mqtt.golang"
 )
 
 var brokerLoad = make(chan bool)
@@ -101,5 +103,7 @@ func main() {
 	fmt.Printf("Received %3d Broker Connection messages\n", connectionCount)
 	fmt.Printf("Received %3d Broker Clients messages\n", clientsCount)
 
-	c.Disconnect(250)
+	ctx, cancel := context.WithTimeout(context.Background(), 250 * time.Millisecond)
+	c.Disconnect(ctx)
+	cancel()
 }

@@ -15,11 +15,13 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"os"
+	"time"
 
-	MQTT "github.com/eclipse/paho.mqtt.golang"
+	MQTT "github.com/zenreach/paho.mqtt.golang"
 )
 
 /*
@@ -98,7 +100,9 @@ func main() {
 			token.Wait()
 		}
 
-		client.Disconnect(250)
+		ctx, cancel := context.WithTimeout(context.Background(), 250 * time.Millisecond)
+		client.Disconnect(ctx)
+		cancel()
 		fmt.Println("Sample Publisher Disconnected")
 	} else {
 		receiveCount := 0
@@ -124,7 +128,9 @@ func main() {
 			receiveCount++
 		}
 
-		client.Disconnect(250)
+		ctx, cancel := context.WithTimeout(context.Background(), 250 * time.Millisecond)
+		client.Disconnect(ctx)
+		cancel()
 		fmt.Println("Sample Subscriber Disconnected")
 	}
 }

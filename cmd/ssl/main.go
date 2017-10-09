@@ -41,13 +41,14 @@ must be created:
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
 	"time"
 
-	MQTT "github.com/eclipse/paho.mqtt.golang"
+	MQTT "github.com/zenreach/paho.mqtt.golang"
 )
 
 func NewTLSConfig() *tls.Config {
@@ -122,5 +123,7 @@ func main() {
 		i++
 	}
 
-	c.Disconnect(250)
+	ctx, cancel := context.WithTimeout(context.Background(), 250 * time.Millisecond)
+	c.Disconnect(ctx)
+	cancel()
 }

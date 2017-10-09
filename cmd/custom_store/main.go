@@ -18,11 +18,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
-	MQTT "github.com/eclipse/paho.mqtt.golang"
-	"github.com/eclipse/paho.mqtt.golang/packets"
+	MQTT "github.com/zenreach/paho.mqtt.golang"
+	"github.com/zenreach/paho.mqtt.golang/packets"
 )
 
 // This NoOpStore type implements the go-mqtt/Store interface, which
@@ -92,5 +93,7 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}
 
-	c.Disconnect(250)
+	ctx, cancel := context.WithTimeout(context.Background(), 250 * time.Millisecond)
+	c.Disconnect(ctx)
+	cancel()
 }

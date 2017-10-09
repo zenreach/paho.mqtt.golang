@@ -25,8 +25,8 @@ import (
 	"time"
 )
 
-func timeout(timeout time.Duration) context.Context {
-	ctx, _ := context.WithTimeout(context.Background(), timeout)
+func timeout(ms int64) context.Context {
+	ctx, _ := context.WithTimeout(context.Background(), time.Duration(ms) * time.Millisecond)
 	return ctx
 }
 

@@ -18,7 +18,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/eclipse/paho.mqtt.golang/packets"
+	"github.com/zenreach/paho.mqtt.golang/packets"
 )
 
 func keepalive(c *client) {

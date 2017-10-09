@@ -15,12 +15,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
-	"github.com/eclipse/paho.mqtt.golang"
+	"github.com/zenreach/paho.mqtt.golang"
 )
 
 var f mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
@@ -59,7 +60,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	c.Disconnect(250)
+	ctx, cancel := context.WithTimeout(context.Background(), 250 * time.Millisecond)
+	c.Disconnect(ctx)
+	cancel()
 
 	time.Sleep(1 * time.Second)
 }
